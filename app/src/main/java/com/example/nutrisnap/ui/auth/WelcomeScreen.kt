@@ -1,4 +1,3 @@
-
 package com.example.nutrisnap.ui.auth
 
 import androidx.compose.foundation.Image
@@ -28,7 +27,7 @@ import com.example.nutrisnap.ui.theme.NutriSnapTheme
 @Composable
 fun WelcomeScreen(
     onGetStartedClick: () -> Unit
-) {
+){
     // Compose layout that allows us to stack elements on top of one another
     Box(
         modifier = Modifier.fillMaxSize() //tells the box to occupy all the available screen space
@@ -105,12 +104,12 @@ fun WelcomeScreen(
     }
 }
 // To preview the screen
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable
-//fun WelcomeScreenPreview() {
-//    NutriSnapTheme {
-//        WelcomeScreen(
-//            onGetStartedClick = {}
-//        )
-//    }
-//}
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun WelcomeScreenPreview() {
+    NutriSnapTheme {
+        WelcomeScreen(
+            onGetStartedClick = {}
+        )
+    }
+}

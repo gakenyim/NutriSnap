@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.nutrisnap.navigation.AppNavigation
 import com.example.nutrisnap.ui.auth.WelcomeScreen
 import com.example.nutrisnap.ui.theme.NutriSnapTheme
 
@@ -22,12 +23,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             NutriSnapTheme {
                 // Tells compose to display welcome screen
-                WelcomeScreen(
-                    //Callback function that allows the WelcomeScreen to tell MainActivity what should happen when the user clicks Get Started.
-                    onGetStartedClick = {
-
-                    }
-                )
+                AppNavigation()
             }
         }
     }
