@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 
 import com.example.nutrisnap.ui.auth.WelcomeScreen
 import com.example.nutrisnap.ui.auth.LoginScreen
+import com.example.nutrisnap.ui.auth.RegisterScreen
 
 // controls the navigation between screens
 @Composable
@@ -33,10 +34,20 @@ fun AppNavigation() {
         "login" -> {
             LoginScreen(
                 onLoginClick = {
-                    // We will implement login functionality later
+                    // We will implement authentication later
                 },
                 onRegisterClick = {
-                    // Registration navigation will be added later
+                    currentScreen = "register"
+                }
+            )
+        }
+        "register" -> {
+            RegisterScreen(
+                onRegisterClick = {
+                    // Registration logic will be implemented later
+                },
+                onLoginClick = {
+                    currentScreen= "login"
                 }
             )
         }
