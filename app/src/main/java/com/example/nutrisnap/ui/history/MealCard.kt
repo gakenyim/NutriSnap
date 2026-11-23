@@ -1,6 +1,7 @@
 package com.example.nutrisnap.ui.history
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,14 +31,17 @@ import com.example.nutrisnap.data.models.Meal
 @Composable
 fun MealCard(
     meal: Meal,
+    onMealClick: (Meal) -> Unit,
     onToggleFavourite: (Meal) -> Unit,
+    onDeleteMeal: (Meal) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Orange accent matching your Figma theme
     val brandOrange = Color(0xFFFF7A00)
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onMealClick(meal) },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -47,7 +51,7 @@ fun MealCard(
                 .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left: Square food image placeholder (later you can swap in Coil/AsyncImage)
+            // Left square placeholder
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -65,7 +69,7 @@ fun MealCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Middle: Meal name + calories & macros
+            // Middle info
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -82,13 +86,21 @@ fun MealCard(
                 )
             }
 
-            // Right: Favourite toggle button
-            IconButton(onClick = { onToggleFavourite(meal) }) {
-                Text(
-                    text = if (meal.isFavourite) "♥" else "♡",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = if (meal.isFavourite) brandOrange else Color.Gray
-                )
+            // Right actions: Favourite + Delete
+            Row {
+                IconButton(onClick = { onToggleFavourite(meal) }) {
+                    Text(
+                        text = if (meal.isFavourite) "♥" else "♡",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = if (meal.isFavourite) brandOrange else Color.Gray
+                    )
+                }
+                IconButton(onClick = { onDeleteMeal(meal) }) {
+                    Text(
+                        text = "🗑",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
         }
     }
@@ -99,6 +111,8 @@ fun MealCard(
 private fun MealCardPreview() {
     MealCard(
         meal = SampleData.sampleMeals.first(),
-        onToggleFavourite = {}
+        onMealClick = {},
+        onToggleFavourite = {},
+        onDeleteMeal = {}
     )
 }

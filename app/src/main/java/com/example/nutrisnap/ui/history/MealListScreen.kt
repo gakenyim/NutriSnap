@@ -33,16 +33,17 @@ fun MealListScreen(
     title: String,
     meals: List<Meal>,
     onToggleFavourite: (Meal) -> Unit,
+    onEditMeal: (Meal) -> Unit,
+    onDeleteMeal: (Meal) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val brandOrange = Color(0xFFFF7A00)
 
-    // UI state for search text and selected filter chip
     var searchQuery by remember { mutableStateOf("") }
     val filters = listOf("All", "High Protein", "Low Calorie")
     var selectedFilter by remember { mutableStateOf("All") }
+    var mealBeingEdited by remember { mutableStateOf<Meal?>(null) }
 
-    // Filter meals live as the user types or taps a chip
     val filteredMeals = meals.filter { meal ->
         val matchesSearch = meal.name.contains(searchQuery.trim(), ignoreCase = true)
         val matchesFilter = when (selectedFilter) {
@@ -59,14 +60,12 @@ fun MealListScreen(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 1. Title
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
 
-        // 2. Search input
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
@@ -76,7 +75,6 @@ fun MealListScreen(
             shape = RoundedCornerShape(12.dp)
         )
 
-        // 3. Filter chips
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -93,7 +91,6 @@ fun MealListScreen(
             }
         }
 
-        // 4. Meal cards list
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 16.dp),
@@ -102,10 +99,23 @@ fun MealListScreen(
             items(filteredMeals, key = { it.id }) { meal ->
                 MealCard(
                     meal = meal,
-                    onToggleFavourite = onToggleFavourite
+                    onMealClick = { mealBeingEdited = it },
+                    onToggleFavourite = onToggleFavourite,
+                    onDeleteMeal = onDeleteMeal
                 )
             }
         }
+    }
+
+    mealBeingEdited?.let { selectedMeal ->
+        EditMealDialog(
+            meal = selectedMeal,
+            onDismiss = { mealBeingEdited = null },
+            onSave = { updatedMeal ->
+                onEditMeal(updatedMeal)
+                mealBeingEdited = null
+            }
+        )
     }
 }
 
@@ -121,6 +131,14 @@ private fun MealListScreenPreview() {
             previewMeals = previewMeals.map {
                 if (it.id == clickedMeal.id) it.copy(isFavourite = !it.isFavourite) else it
             }
+        },
+        onEditMeal = { updatedMeal ->
+            previewMeals = previewMeals.map {
+                if (it.id == updatedMeal.id) updatedMeal else it
+            }
+        },
+        onDeleteMeal = { mealToDelete ->
+            previewMeals = previewMeals.filterNot { it.id == mealToDelete.id }
         }
     )
 }
