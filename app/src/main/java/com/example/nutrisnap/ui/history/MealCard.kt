@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,71 +22,83 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.nutrisnap.data.SampleData
 import com.example.nutrisnap.data.models.Meal
 
 @Composable
-fun MacroStat(value: String, label: String, color: Color = Color.Unspecified) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            value,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = color
-        )
-        Text(label, style = MaterialTheme.typography.labelSmall)
-    }
-}
-
-@Composable
-fun MealListCard(
+fun MealCard(
     meal: Meal,
-    onFavouriteClick: () -> Unit,
+    onToggleFavourite: (Meal) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Orange accent matching your Figma theme
+    val brandOrange = Color(0xFFFF7A00)
+
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Row(Modifier.padding(12.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left: Square food image placeholder (later you can swap in Coil/AsyncImage)
             Box(
-                Modifier
-                    .size(72.dp)
+                modifier = Modifier
+                    .size(64.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            )
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
+                    .background(Color(0xFFFFE6D1)),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
-                    meal.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
+                    text = meal.name.take(1),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = brandOrange
                 )
-                if (meal.description.isNotBlank()) {
-                    Text(
-                        meal.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                Spacer(Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                    MacroStat("${meal.kcal}", "kcal", MaterialTheme.colorScheme.primary)
-                    MacroStat("${meal.protein}g", "Protein")
-                    MacroStat("${meal.carbs}g", "Carbs")
-                    MacroStat("${meal.fat}g", "Fat")
-                }
             }
-            IconButton(onClick = onFavouriteClick) {
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Middle: Meal name + calories & macros
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
                 Text(
-                    "♥",
-                    color = if (meal.isFavourite) Color.Red else Color.LightGray,
-                    style = MaterialTheme.typography.titleLarge
+                    text = meal.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "${meal.kcal} kcal • ${meal.protein}g P • ${meal.carbs}g C • ${meal.fat}g F",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Right: Favourite toggle button
+            IconButton(onClick = { onToggleFavourite(meal) }) {
+                Text(
+                    text = if (meal.isFavourite) "♥" else "♡",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = if (meal.isFavourite) brandOrange else Color.Gray
                 )
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MealCardPreview() {
+    MealCard(
+        meal = SampleData.sampleMeals.first(),
+        onToggleFavourite = {}
+    )
 }

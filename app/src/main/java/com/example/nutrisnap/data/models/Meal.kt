@@ -1,16 +1,18 @@
 package com.example.nutrisnap.data.models
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "meals") // Creates a "meals" table in the Room database
 data class Meal(
-    val id: Long = 0,
-    val name: String,
-    val kcal: Int,
-    val carbs: Int,
-    val protein: Int,
-    val fat: Int,
-    val healthScore: Int,
-    val imageUri: String?,
-    val timestamp: Long,
-    val isFavourite: Boolean = false,
-    val description: String = "",
-    val tags: String = ""   // e.g. "High Protein,Vegan",
+    @PrimaryKey val id: String,       // Unique ID for each meal (e.g., UUID string)
+    val name: String,                 // Food name, e.g., "Grilled Chicken Salad"
+    val kcal: Int,                    // Total calories
+    val carbs: Int,                   // Carbohydrates in grams
+    val protein: Int,                 // Protein in grams
+    val fat: Int,                     // Fat in grams
+    val healthScore: Int,             // Score from 0–100 (or 1–10)
+    val imageUri: String,             // Path/URI string to the meal photo (can be "" if none)
+    val timestamp: Long,              // Time saved in milliseconds (System.currentTimeMillis())
+    val isFavourite: Boolean = false  // True if starred/favourited by the user
 )
