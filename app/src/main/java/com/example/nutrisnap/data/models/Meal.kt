@@ -10,5 +10,7 @@ data class Meal(
     val healthScore: Int,
     val imageUri: String?,
     val timestamp: Long,
-    val isFavourite: Boolean = false
+    val isFavourite: Boolean = false,
+    val description: String = "",
+    val tags: String = ""   // e.g. "High Protein,Vegan",
 )
