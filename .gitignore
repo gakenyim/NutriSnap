@@ -15,4 +15,5 @@
 local.properties
 
 .env
+.env.*
 google-services.json
