@@ -1,9 +1,23 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 
     id("com.google.gms.google-services")
 }
+
+// Load .env from the project root
+val envFile = rootProject.file(".env")
+val envProps = Properties()
+if (envFile.exists()) {
+    envFile.inputStream().use { envProps.load(it) }
+}
+val usdaApiKey = envProps.getProperty("USDA_API_KEY")
+    ?.trim()
+    ?.removeSurrounding("\"")
+    ?: ""
+
 
 android {
     namespace = "com.example.nutrisnap"
@@ -19,6 +33,8 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "USDA_API_KEY", "\"$usdaApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,6 +52,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true // <-- Enables BuildConfig generation
     }
 }
 
@@ -70,6 +87,9 @@ dependencies {
     // Firebase Authentication
     implementation("com.google.firebase:firebase-auth")
     implementation(libs.androidx.material3)
+
+    // Add ONNX Runtime for Android
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.32.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

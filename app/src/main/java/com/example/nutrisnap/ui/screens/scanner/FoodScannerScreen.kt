@@ -18,9 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.nutrisnap.BuildConfig
+import com.example.nutrisnap.FoodScannerRepository
 import com.example.nutrisnap.PredictionResponse
-import com.example.nutrisnap.RetrofitClient
-import com.example.nutrisnap.createImagePart
 import kotlinx.coroutines.launch
 
 @Composable
@@ -30,8 +30,16 @@ fun FoodScannerScreen(
     onConfirm: (PredictionResponse) -> Unit = {},
     onCloseScanner: () -> Unit = {}
 ) {
+
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    val repository = remember {
+        FoodScannerRepository(
+            context = context,
+            usdaApiKey = BuildConfig.USDA_API_KEY
+        )
+    }
 
     // Selected gallery image
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -83,23 +91,11 @@ fun FoodScannerScreen(
             errorMessage = null
 
             try {
-                val imagePart = createImagePart(
+                predictionResult = repository.analyzeFood(
                     context = context,
                     imageUri = selectedImageUri,
                     bitmap = capturedImage
                 )
-
-                val response = RetrofitClient.api.predictFood(imagePart)
-
-                if (response.isSuccessful) {
-                    predictionResult = response.body()
-                    if (predictionResult == null) {
-                        errorMessage = "The server returned an empty response"
-                    }
-                } else {
-                    errorMessage =
-                        "Prediction failed: ${response.code()} - ${response.errorBody()?.string()}"
-                }
             } catch (e: Exception) {
                 errorMessage = e.localizedMessage ?: "Something went wrong"
             } finally {

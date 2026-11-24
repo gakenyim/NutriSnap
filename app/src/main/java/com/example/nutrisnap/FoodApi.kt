@@ -1,10 +1,7 @@
 package com.example.nutrisnap
 
-import okhttp3.MultipartBody
-import retrofit2.Response
-import retrofit2.http.Multipart
-import retrofit2.http.POST
-import retrofit2.http.Part
+import retrofit2.http.GET
+import retrofit2.http.Query
 
 data class FoodPrediction(
     val food_name: String,
@@ -35,12 +32,33 @@ data class PredictionResponse(
     val nutrition: NutritionDetails?
 )
 
-interface FoodApi {
+// USDA FoodData Central API models (must match USDA's camelCase JSON keys)
+data class UsdaSearchResponse(
+    val foods: List<UsdaFoodDto> = emptyList()
+)
 
-    @Multipart
-    @POST("predict/")
-    suspend fun predictFood(
-        @Part file: MultipartBody.Part
-    ): Response<PredictionResponse>
+data class UsdaFoodDto(
+    val fdcId: Int,
+    val description: String?,
+    val dataType: String?,
+    val servingSize: Double?,
+    val servingSizeUnit: String?,
+    val householdServingFullText: String?,
+    val foodNutrients: List<UsdaNutrientDto> = emptyList()
+)
 
+data class UsdaNutrientDto(
+    val nutrientId: Int,
+    val nutrientName: String?,
+    val value: Double?,
+    val unitName: String?
+)
+
+interface UsdaApi {
+    @GET("foods/search")
+    suspend fun searchFood(
+        @Query("api_key") apiKey: String,
+        @Query("query") query: String,
+        @Query("pageSize") pageSize: Int = 1
+    ): UsdaSearchResponse
 }
