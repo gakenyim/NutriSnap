@@ -1,6 +1,6 @@
 package com.example.nutrisnap.data
 
-import com.example.nutrisnap.data.models.Meal
+import com.example.nutrisnap.model.Meal
 
 object SampleData {
     val sampleMeals = listOf(
