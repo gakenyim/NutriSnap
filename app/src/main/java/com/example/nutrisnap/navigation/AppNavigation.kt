@@ -12,6 +12,11 @@ import com.example.nutrisnap.ui.auth.WelcomeScreen
 import com.example.nutrisnap.ui.auth.LoginScreen
 import com.example.nutrisnap.ui.auth.RegisterScreen
 import com.example.nutrisnap.ui.dashboard.DashboardScreen
+import com.example.nutrisnap.ui.profile.ProfileScreen
+import com.example.nutrisnap.ui.history.HistoryScreen
+import com.example.nutrisnap.ui.favourites.FavouritesScreen
+import com.example.nutrisnap.ui.reports.NutritionReportsScreen
+import com.example.nutrisnap.ui.profile.AccountSettingsScreen
 
 // controls the navigation between screens
 @Composable
@@ -60,6 +65,70 @@ fun AppNavigation() {
             onHistoryClick = { currentScreen = "history" },
             onFavouritesClick = { currentScreen = "favourites" },
             onProfileClick = { currentScreen = "profile" }
+        )
+        "profile" -> ProfileScreen(
+            onHomeClick = {
+                currentScreen = "dashboard"
+            },
+            onScanClick = {
+                currentScreen = "scanner"
+            },
+            onHistoryClick = {
+                currentScreen = "history"
+            },
+            onProfileClick = {
+                currentScreen = "profile"
+            },
+            onScanHistoryClick = {
+                currentScreen = "history"
+            },
+            onSavedMealsClick = {
+                currentScreen = "favourites"
+            },
+            onNutritionReportsClick = {
+                currentScreen = "reports"
+            },
+            onAccountSettingsClick = {
+                currentScreen = "accountSettings"
+            },
+            onLogoutClick = {
+                currentScreen = "welcome"
+            }
+        )
+        "history" -> HistoryScreen(
+            onHomeClick = { currentScreen = "dashboard" },
+            onScanClick = { currentScreen = "scanner" },
+            onHistoryClick = { currentScreen = "history" },
+            onFavouritesClick = { currentScreen = "favourites" },
+            onProfileClick = { currentScreen = "profile" }
+        )
+        "favourites" -> FavouritesScreen(
+            onHomeClick = { currentScreen = "dashboard" },
+            onScanClick = { currentScreen = "scanner" },
+            onHistoryClick = { currentScreen = "history" },
+            onProfileClick = { currentScreen = "profile" }
+        )
+        "reports" -> NutritionReportsScreen(
+            onHomeClick = {
+                currentScreen = "dashboard"
+            },
+            onScanClick = {
+                currentScreen = "scanner"
+            },
+            onHistoryClick = {
+                currentScreen = "history"
+            },
+            onProfileClick = {
+                currentScreen = "profile"
+            }
+        )
+        "accountSettings" -> AccountSettingsScreen(
+            onBackClick = {
+                currentScreen = "profile"
+            },
+            onLogoutClick = {
+                currentScreen = "welcome"
+            }
         )
     }
 }

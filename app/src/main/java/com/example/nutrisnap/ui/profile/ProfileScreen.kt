@@ -18,15 +18,51 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.nutrisnap.R
 
+
 private val Orange = Color(0xFFE94E0B)
 private val DarkText = Color(0xFF252525)
 private val GreyText = Color(0xFF888888)
 private val LightBackground = Color(0xFFFFFBF8)
+
+private class ConcaveHeaderShape : Shape {
+
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline {
+
+        val path = Path().apply {
+            moveTo(0f, 0f)
+
+            lineTo(size.width, 0f)
+
+            lineTo(size.width, size.height)
+
+            quadraticTo(
+                size.width / 2f,
+                size.height * 0.78f,
+                0f,
+                size.height
+            )
+
+            close()
+        }
+
+        return Outline.Generic(path)
+    }
+}
 
 @Composable
 fun ProfileScreen(
@@ -57,7 +93,8 @@ fun ProfileScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(190.dp)
+                    .height(260.dp)
+                    .clip(ConcaveHeaderShape())
             ) {
                 Image(
                     painter = painterResource(R.drawable.food_background),
@@ -132,7 +169,9 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column {
+                Column(
+                    modifier = Modifier.padding(top = 22.dp)
+                ) {
                     Text(
                         text = "John Doe",
                         fontSize = 16.sp,

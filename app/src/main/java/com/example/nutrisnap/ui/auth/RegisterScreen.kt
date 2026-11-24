@@ -1,4 +1,3 @@
-
 package com.example.nutrisnap.ui.auth
 
 import androidx.compose.foundation.Image
