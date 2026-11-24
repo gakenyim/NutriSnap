@@ -136,7 +136,7 @@ fun HistoryScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 24.dp),
+                    contentPadding = PaddingValues(bottom = 96.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(mealsForSelectedDay, key = { it.id }) { meal ->

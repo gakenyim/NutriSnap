@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        //setContent tells Android that we want to display a Jetpack Compose interface
         setContent {
             NutriSnapTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
