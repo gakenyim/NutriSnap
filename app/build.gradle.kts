@@ -3,7 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-
+    alias(libs.plugins.ksp)
     id("com.google.gms.google-services")
 }
 
@@ -17,7 +17,6 @@ val usdaApiKey = envProps.getProperty("USDA_API_KEY")
     ?.trim()
     ?.removeSurrounding("\"")
     ?: ""
-
 
 android {
     namespace = "com.example.nutrisnap"
@@ -52,43 +51,42 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig = true // <-- Enables BuildConfig generation
+        buildConfig = true
     }
 }
 
 dependencies {
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.1")
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
-    // Retrofit - HTTP requests
+    // Room & KSP (from database-meals)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    // Retrofit & OkHttp
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
-
-    // Gson - JSON conversion
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
-
-    // OkHttp - HTTP client
     implementation("com.squareup.okhttp3:okhttp:5.5.1")
 
-    // Coil
+    // Coil & Icons
     implementation("io.coil-kt:coil-compose:2.7.0")
-
     implementation("androidx.compose.material:material-icons-core:1.7.8")
 
-    // Import Firebase BOM
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:35.2.0"))
-
-    // Firebase Authentication
     implementation("com.google.firebase:firebase-auth")
-    implementation(libs.androidx.material3)
 
-    // Add ONNX Runtime for Android
+    // ONNX Runtime
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.32.0")
 
     testImplementation(libs.junit)
