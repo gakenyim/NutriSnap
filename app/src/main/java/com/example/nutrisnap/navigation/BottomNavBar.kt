@@ -45,7 +45,6 @@ fun BottomNavBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
             .height(78.dp)
             .background(Color.Transparent)
     ) {

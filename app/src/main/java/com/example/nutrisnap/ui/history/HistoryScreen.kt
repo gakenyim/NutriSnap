@@ -1,47 +1,48 @@
 package com.example.nutrisnap.ui.history
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.nutrisnap.data.SampleData
 import com.example.nutrisnap.data.models.Meal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-private val BrandOrange = Color(0xFFFF7A00)
+private val ScannerOrange = Color(0xFFFF7A00)
+private val ScannerOrangeSoft = Color(0xFFFFF3E8)
+private val CanvasBackground = Color(0xFFF8F9FA)
+private val TextPrimary = Color(0xFF141414)
+private val TextSecondary = Color(0xFF6B7280)
+private val CardBorder = Color(0xFFECEEF2)
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HistoryScreen(
     meals: List<Meal>,
@@ -52,86 +53,100 @@ fun HistoryScreen(
     modifier: Modifier = Modifier
 ) {
     val today = remember { LocalDate.now() }
-    // Generate the last 7 days ending today
     val weekDates = remember { (6L downTo 0L).map { today.minusDays(it) } }
     var selectedDate by remember { mutableStateOf(today) }
     var mealBeingEdited by remember { mutableStateOf<Meal?>(null) }
 
-    // Filter meals whose timestamp falls on the selected date
-    val mealsForSelectedDay = meals.filter { meal ->
-        val mealDate = Instant.ofEpochMilli(meal.timestamp)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
-        mealDate == selectedDate
+    val mealsForSelectedDay = remember(meals, selectedDate) {
+        meals.filter { meal ->
+            val mealDate = Instant.ofEpochMilli(meal.timestamp)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+            mealDate == selectedDate
+        }
     }
 
-    // Calculate daily totals for the selected day
     val totalKcal = mealsForSelectedDay.sumOf { it.kcal }
     val totalProtein = mealsForSelectedDay.sumOf { it.protein }
     val totalCarbs = mealsForSelectedDay.sumOf { it.carbs }
     val totalFat = mealsForSelectedDay.sumOf { it.fat }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp, top = 44.dp, bottom = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = CanvasBackground
     ) {
-        // 1. Top Title
-        Text(
-            text = "History",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            HistoryHeader(selectedDate = selectedDate, today = today)
 
-        // 2. 7-Day Date Strip
-        DateStrip(
-            dates = weekDates,
-            selectedDate = selectedDate,
-            onDateSelected = { selectedDate = it }
-        )
+            DateStrip(
+                dates = weekDates,
+                selectedDate = selectedDate,
+                onDateSelected = { selectedDate = it }
+            )
 
-        // 3. Calorie Progress & Macro Summary Card
-        DailyCaloriesCard(
-            consumedKcal = totalKcal,
-            goalKcal = dailyCalorieGoal,
-            protein = totalProtein,
-            carbs = totalCarbs,
-            fat = totalFat
-        )
+            DailyCaloriesCard(
+                isToday = selectedDate == today,
+                consumedKcal = totalKcal,
+                goalKcal = dailyCalorieGoal,
+                protein = totalProtein,
+                carbs = totalCarbs,
+                fat = totalFat
+            )
 
-        // 4. Section Header + Meals List
-        Text(
-            text = if (selectedDate == today) "Today's Activity" else "Activity for ${selectedDate.dayOfMonth} ${selectedDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())}",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        if (mealsForSelectedDay.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 32.dp),
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "No meals logged for this day yet.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = if (selectedDate == today) {
+                        "Today's Meals"
+                    } else {
+                        "Meals • ${selectedDate.format(DateTimeFormatter.ofPattern("MMM d"))}"
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
                 )
+
+                if (mealsForSelectedDay.isNotEmpty()) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = ScannerOrangeSoft
+                    ) {
+                        Text(
+                            text = "${mealsForSelectedDay.size} logged",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = ScannerOrange
+                        )
+                    }
+                }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(mealsForSelectedDay, key = { it.id }) { meal ->
-                    MealCard(
-                        meal = meal,
-                        onMealClick = { mealBeingEdited = it },
-                        onToggleFavourite = onToggleFavourite,
-                        onDeleteMeal = onDeleteMeal
-                    )
+
+            if (mealsForSelectedDay.isEmpty()) {
+                EmptyHistoryCard(isToday = selectedDate == today)
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(mealsForSelectedDay, key = { it.id }) { meal ->
+                        MealCard(
+                            meal = meal,
+                            onMealClick = { mealBeingEdited = it },
+                            onToggleFavourite = onToggleFavourite,
+                            onDeleteMeal = onDeleteMeal
+                        )
+                    }
                 }
             }
         }
@@ -149,6 +164,57 @@ fun HistoryScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+private fun HistoryHeader(
+    selectedDate: LocalDate,
+    today: LocalDate
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = "Nutrition History",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+            Text(
+                text = if (selectedDate == today) {
+                    "Today, ${selectedDate.format(DateTimeFormatter.ofPattern("MMMM d"))}"
+                } else {
+                    selectedDate.format(DateTimeFormatter.ofPattern("EEEE, MMMM d"))
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary
+            )
+        }
+
+        Surface(
+            shape = CircleShape,
+            color = Color.White,
+            border = BorderStroke(1.dp, CardBorder),
+            shadowElevation = 2.dp
+        ) {
+            Box(
+                modifier = Modifier.padding(10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.DateRange,
+                    contentDescription = "Calendar",
+                    tint = ScannerOrange,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun DateStrip(
     dates: List<LocalDate>,
@@ -157,32 +223,51 @@ private fun DateStrip(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         dates.forEach { date ->
             val isSelected = date == selectedDate
-            val dayLabel = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()).take(2)
+            val dayLabel = date.dayOfWeek
+                .getDisplayName(TextStyle.SHORT, Locale.getDefault())
+                .take(3)
 
-            Column(
+            val containerColor by animateColorAsState(
+                targetValue = if (isSelected) ScannerOrange else Color.White,
+                label = "dateChipBg"
+            )
+            val contentColor by animateColorAsState(
+                targetValue = if (isSelected) Color.White else TextPrimary,
+                label = "dateChipText"
+            )
+
+            Surface(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isSelected) BrandOrange else Color(0xFFF4F4F4))
-                    .clickable { onDateSelected(date) }
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .weight(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onDateSelected(date) },
+                shape = RoundedCornerShape(16.dp),
+                color = containerColor,
+                border = if (isSelected) null else BorderStroke(1.dp, CardBorder),
+                shadowElevation = if (isSelected) 4.dp else 1.dp
             ) {
-                Text(
-                    text = dayLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (isSelected) Color.White else Color.Gray
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = date.dayOfMonth.toString(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isSelected) Color.White else Color.Black
-                )
+                Column(
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = dayLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Medium,
+                        color = if (isSelected) Color.White.copy(alpha = 0.85f) else TextSecondary
+                    )
+                    Text(
+                        text = date.dayOfMonth.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = contentColor
+                    )
+                }
             }
         }
     }
@@ -190,6 +275,7 @@ private fun DateStrip(
 
 @Composable
 private fun DailyCaloriesCard(
+    isToday: Boolean,
     consumedKcal: Int,
     goalKcal: Int,
     protein: Int,
@@ -197,44 +283,195 @@ private fun DailyCaloriesCard(
     fat: Int
 ) {
     val progress = (consumedKcal.toFloat() / goalKcal.toFloat()).coerceIn(0f, 1f)
+    val remainingKcal = (goalKcal - consumedKcal).coerceAtLeast(0)
 
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF6EE))
+        shape = RoundedCornerShape(24.dp),
+        color = Color.White,
+        border = BorderStroke(1.dp, CardBorder),
+        shadowElevation = 4.dp
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text(
-                text = "Today Calories",
-                style = MaterialTheme.typography.labelLarge,
-                color = Color.DarkGray
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = if (isToday) "Calories Consumed" else "Daily Intake",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = TextSecondary
+                    )
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = "$consumedKcal",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = " / $goalKcal kcal",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = ScannerOrangeSoft
+                ) {
+                    Text(
+                        text = "$remainingKcal left",
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = ScannerOrange
+                    )
+                }
+            }
+
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp)),
-                color = BrandOrange,
-                trackColor = Color(0xFFFFDFC2)
+                    .height(10.dp)
+                    .clip(RoundedCornerShape(5.dp)),
+                color = ScannerOrange,
+                trackColor = ScannerOrangeSoft,
+                strokeCap = StrokeCap.Round
             )
+
+            HorizontalDivider(color = CardBorder, thickness = 1.dp)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                MacroBadge(
+                    label = "Protein",
+                    grams = protein,
+                    accentColor = Color(0xFF3B82F6),
+                    modifier = Modifier.weight(1f)
+                )
+                MacroBadge(
+                    label = "Carbs",
+                    grams = carbs,
+                    accentColor = ScannerOrange,
+                    modifier = Modifier.weight(1f)
+                )
+                MacroBadge(
+                    label = "Fat",
+                    grams = fat,
+                    accentColor = Color(0xFF10B981),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MacroBadge(
+    label: String,
+    grams: Int,
+    accentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(14.dp),
+        color = CanvasBackground
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(accentColor)
+                )
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextSecondary
+                )
+            }
             Text(
-                text = "$consumedKcal / $goalKcal kcal",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Protein: ${protein}g  •  Carbs: ${carbs}g  •  Fat: ${fat}g",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.DarkGray
+                text = "${grams}g",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary,
+                fontSize = 15.sp
             )
         }
     }
 }
 
+@Composable
+private fun EmptyHistoryCard(isToday: Boolean) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White,
+        border = BorderStroke(1.dp, CardBorder),
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 36.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = ScannerOrangeSoft
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Add,
+                    contentDescription = null,
+                    tint = ScannerOrange,
+                    modifier = Modifier
+                        .padding(14.dp)
+                        .size(28.dp)
+                )
+            }
+            Text(
+                text = if (isToday) "No meals scanned today" else "No meals recorded",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+            Text(
+                text = if (isToday) {
+                    "Use the food scanner to snap a meal and track your daily macros."
+                } else {
+                    "There were no food logs saved on this date."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun HistoryScreenPreview() {
