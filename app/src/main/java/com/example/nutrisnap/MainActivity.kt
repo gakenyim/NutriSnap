@@ -17,7 +17,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.PrimaryTabRow
 import com.example.nutrisnap.ui.MealViewModel
+import com.example.nutrisnap.ui.favourites.FavouritesScreen
 import com.example.nutrisnap.ui.history.HistoryScreen
 import com.example.nutrisnap.ui.history.MealListScreen
 import com.example.nutrisnap.ui.theme.NutriSnapTheme
@@ -38,7 +40,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold { innerPadding ->
                     Column(modifier = Modifier.padding(innerPadding)) {
-                        TabRow(selectedTabIndex = selectedTab) {
+                        PrimaryTabRow(selectedTabIndex = selectedTab) {
                             tabs.forEachIndexed { index, title ->
                                 Tab(
                                     selected = selectedTab == index,
@@ -62,8 +64,7 @@ class MainActivity : ComponentActivity() {
                                 onEditMeal = { mealViewModel.editMeal(it) },
                                 onDeleteMeal = { mealViewModel.deleteMeal(it) }
                             )
-                            2 -> MealListScreen(
-                                title = "Favourites",
+                            2 -> FavouritesScreen(
                                 meals = favouriteMeals,
                                 onToggleFavourite = { mealViewModel.toggleFavourite(it) },
                                 onEditMeal = { mealViewModel.editMeal(it) },
