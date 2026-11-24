@@ -35,6 +35,7 @@ fun MealListScreen(
     onToggleFavourite: (Meal) -> Unit,
     onEditMeal: (Meal) -> Unit,
     onDeleteMeal: (Meal) -> Unit,
+    showDeleteButton: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val brandOrange = Color(0xFFFF7A00)
@@ -57,7 +58,7 @@ fun MealListScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 44.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
@@ -99,9 +100,10 @@ fun MealListScreen(
             items(filteredMeals, key = { it.id }) { meal ->
                 MealCard(
                     meal = meal,
-                    onMealClick = { mealBeingEdited = it },
+                    onMealClick = { mealBeingEdited = meal },
                     onToggleFavourite = onToggleFavourite,
-                    onDeleteMeal = onDeleteMeal
+                    onDeleteMeal = onDeleteMeal,
+                    showDeleteButton = showDeleteButton
                 )
             }
         }

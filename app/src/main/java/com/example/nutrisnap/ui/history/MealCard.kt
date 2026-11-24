@@ -34,6 +34,7 @@ fun MealCard(
     onMealClick: (Meal) -> Unit,
     onToggleFavourite: (Meal) -> Unit,
     onDeleteMeal: (Meal) -> Unit,
+    showDeleteButton: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val brandOrange = Color(0xFFFF7A00)
@@ -51,7 +52,6 @@ fun MealCard(
                 .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left square placeholder
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -69,7 +69,6 @@ fun MealCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Middle info
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -86,7 +85,6 @@ fun MealCard(
                 )
             }
 
-            // Right actions: Favourite + Delete
             Row {
                 IconButton(onClick = { onToggleFavourite(meal) }) {
                     Text(
@@ -95,11 +93,13 @@ fun MealCard(
                         color = if (meal.isFavourite) brandOrange else Color.Gray
                     )
                 }
-                IconButton(onClick = { onDeleteMeal(meal) }) {
-                    Text(
-                        text = "🗑",
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                if (showDeleteButton) {
+                    IconButton(onClick = { onDeleteMeal(meal) }) {
+                        Text(
+                            text = "🗑",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
                 }
             }
         }

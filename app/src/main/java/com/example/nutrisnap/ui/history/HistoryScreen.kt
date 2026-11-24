@@ -33,9 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.nutrisnap.data.SampleData
-import com.example.nutrisnap.data.models.DailyNutritionSummary
 import com.example.nutrisnap.data.models.Meal
-import com.example.nutrisnap.data.models.toDailySummary
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -49,15 +47,17 @@ fun HistoryScreen(
     meals: List<Meal>,
     dailyCalorieGoal: Int = 2500,
     onToggleFavourite: (Meal) -> Unit,
-    onEditMeal: (Meal) -> Unit,
-    onDeleteMeal: (Meal) -> Unit,
+    onEditMeal: (Meal) -> Unit = {},
+    onDeleteMeal: (Meal) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val today = remember { LocalDate.now() }
+    // Generate the last 7 days ending today
     val weekDates = remember { (6L downTo 0L).map { today.minusDays(it) } }
     var selectedDate by remember { mutableStateOf(today) }
     var mealBeingEdited by remember { mutableStateOf<Meal?>(null) }
 
+    // Filter meals whose timestamp falls on the selected date
     val mealsForSelectedDay = meals.filter { meal ->
         val mealDate = Instant.ofEpochMilli(meal.timestamp)
             .atZone(ZoneId.systemDefault())
@@ -65,35 +65,44 @@ fun HistoryScreen(
         mealDate == selectedDate
     }
 
-    // Reuses your DailyNutritionSummary helper for whichever day is tapped
-    val daySummary = meals.toDailySummary(selectedDate)
+    // Calculate daily totals for the selected day
+    val totalKcal = mealsForSelectedDay.sumOf { it.kcal }
+    val totalProtein = mealsForSelectedDay.sumOf { it.protein }
+    val totalCarbs = mealsForSelectedDay.sumOf { it.carbs }
+    val totalFat = mealsForSelectedDay.sumOf { it.fat }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 44.dp, bottom = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // 1. Top Title
         Text(
             text = "History",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
 
+        // 2. 7-Day Date Strip
         DateStrip(
             dates = weekDates,
             selectedDate = selectedDate,
             onDateSelected = { selectedDate = it }
         )
 
+        // 3. Calorie Progress & Macro Summary Card
         DailyCaloriesCard(
-            summary = daySummary,
-            goalKcal = dailyCalorieGoal
+            consumedKcal = totalKcal,
+            goalKcal = dailyCalorieGoal,
+            protein = totalProtein,
+            carbs = totalCarbs,
+            fat = totalFat
         )
 
+        // 4. Section Header + Meals List
         Text(
-            text = if (selectedDate == today) "Today's Activity"
-            else "Activity for ${selectedDate.dayOfMonth} ${selectedDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())}",
+            text = if (selectedDate == today) "Today's Activity" else "Activity for ${selectedDate.dayOfMonth} ${selectedDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())}",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold
         )
@@ -181,10 +190,13 @@ private fun DateStrip(
 
 @Composable
 private fun DailyCaloriesCard(
-    summary: DailyNutritionSummary,
-    goalKcal: Int
+    consumedKcal: Int,
+    goalKcal: Int,
+    protein: Int,
+    carbs: Int,
+    fat: Int
 ) {
-    val progress = (summary.totalKcal.toFloat() / goalKcal.toFloat()).coerceIn(0f, 1f)
+    val progress = (consumedKcal.toFloat() / goalKcal.toFloat()).coerceIn(0f, 1f)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -210,12 +222,12 @@ private fun DailyCaloriesCard(
                 trackColor = Color(0xFFFFDFC2)
             )
             Text(
-                text = "${summary.totalKcal} / $goalKcal kcal",
+                text = "$consumedKcal / $goalKcal kcal",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Protein: ${summary.totalProtein}g  •  Carbs: ${summary.totalCarbs}g  •  Fat: ${summary.totalFat}g",
+                text = "Protein: ${protein}g  •  Carbs: ${carbs}g  •  Fat: ${fat}g",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.DarkGray
             )
@@ -227,7 +239,6 @@ private fun DailyCaloriesCard(
 @Composable
 private fun HistoryScreenPreview() {
     var previewMeals by remember { mutableStateOf(SampleData.sampleMeals) }
-
     HistoryScreen(
         meals = previewMeals,
         onToggleFavourite = { clicked ->
@@ -235,13 +246,13 @@ private fun HistoryScreenPreview() {
                 if (it.id == clicked.id) it.copy(isFavourite = !it.isFavourite) else it
             }
         },
-        onEditMeal = { updated ->
+        onEditMeal = { updatedMeal ->
             previewMeals = previewMeals.map {
-                if (it.id == updated.id) updated else it
+                if (it.id == updatedMeal.id) updatedMeal else it
             }
         },
-        onDeleteMeal = { deleted ->
-            previewMeals = previewMeals.filterNot { it.id == deleted.id }
+        onDeleteMeal = { mealToDelete ->
+            previewMeals = previewMeals.filterNot { it.id == mealToDelete.id }
         }
     )
 }
