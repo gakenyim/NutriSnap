@@ -7,9 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
+
 import com.example.nutrisnap.ui.auth.WelcomeScreen
 import com.example.nutrisnap.ui.auth.LoginScreen
 import com.example.nutrisnap.ui.auth.RegisterScreen
+import com.example.nutrisnap.ui.dashboard.DashboardScreen
 
 // controls the navigation between screens
 @Composable
@@ -34,7 +36,7 @@ fun AppNavigation() {
         "login" -> {
             LoginScreen(
                 onLoginClick = {
-                    // We will implement authentication later
+                    currentScreen = "dashboard"
                 },
                 onRegisterClick = {
                     currentScreen = "register"
@@ -44,12 +46,20 @@ fun AppNavigation() {
         "register" -> {
             RegisterScreen(
                 onRegisterClick = {
-                    // Registration logic will be implemented later
+                    currentScreen = "dashboard"
                 },
                 onLoginClick = {
                     currentScreen= "login"
                 }
             )
         }
+        "dashboard" ->
+            DashboardScreen(
+            hasMeals = true,
+            onScanClick = { currentScreen = "scanner" },
+            onHistoryClick = { currentScreen = "history" },
+            onFavouritesClick = { currentScreen = "favourites" },
+            onProfileClick = { currentScreen = "profile" }
+        )
     }
 }

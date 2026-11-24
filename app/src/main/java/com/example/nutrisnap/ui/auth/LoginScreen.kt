@@ -35,6 +35,9 @@ fun LoginScreen(
     var password by remember {
         mutableStateOf("")
     }
+    var errorMessage by remember{
+        mutableStateOf("")
+    }
 
     Column(
         modifier = Modifier
@@ -130,12 +133,41 @@ fun LoginScreen(
                     unfocusedBorderColor = Color(0xFFDADDE2)
                 )
             )
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 13.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(25.dp))
 
             // Login button
+
+// Login button
             Button(
-                onClick = onLoginClick,
+                onClick = {
+                    errorMessage = when {
+                        username.isBlank() && password.isBlank() ->
+                            "Please enter your username and password."
+
+                        username.isBlank() ->
+                            "Please enter your username."
+
+                        password.isBlank() ->
+                            "Please enter your password."
+
+                        else -> ""
+                    }
+
+                    if (errorMessage.isEmpty()) {
+                        onLoginClick()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
@@ -151,6 +183,7 @@ fun LoginScreen(
                     fontWeight = FontWeight.Medium
                 )
             }
+
 
             Spacer(modifier = Modifier.height(12.dp))
 

@@ -35,6 +35,8 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var errorMessage by remember {mutableStateOf("")}
+    var successMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -175,7 +177,39 @@ fun RegisterScreen(
 
             // Register button
             Button(
-                onClick = onRegisterClick,
+                onClick = {
+                    // Clear previous messages
+                    errorMessage = ""
+                    successMessage = ""
+
+                    when {
+                        username.isBlank() -> {
+                            errorMessage = "Please enter a username."
+                        }
+                        email.isBlank() -> {
+                            errorMessage = "Please enter your email address."
+                        }
+
+                        !android.util.Patterns.EMAIL_ADDRESS
+                            .matcher(email.trim())
+                            .matches() -> {
+                            errorMessage = "Please enter a valid email address."
+                        }
+                        password.isBlank() -> {
+                            errorMessage = "Please enter a password."
+                        }
+                        confirmPassword.isBlank() -> {
+                            errorMessage = "Please confirm your password."
+                        }
+                        password != confirmPassword -> {
+                            errorMessage = "Passwords do not match."
+                        }
+                        else -> {
+                            successMessage = "Registration details are valid!"
+                            onRegisterClick()
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -191,10 +225,27 @@ fun RegisterScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            if (successMessage.isNotEmpty()) {
+                Text(
+                    text = successMessage,
+                    color = Color(0xFF4F793B),
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Link to Login Screen
+            // Link to Log in Screen
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
