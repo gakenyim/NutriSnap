@@ -127,6 +127,11 @@ fun FoodScannerScreen(
                     imageUri = selectedImageUri,
                     bitmap = capturedImage
                 )
+            } catch (e: IllegalArgumentException) {
+                // Image failed food validation
+                errorMessage = e.message
+                    ?: "This image does not appear to contain food. Please upload a food image."
+
             } catch (e: Exception) {
                 errorMessage = e.localizedMessage ?: "Something went wrong"
             } finally {

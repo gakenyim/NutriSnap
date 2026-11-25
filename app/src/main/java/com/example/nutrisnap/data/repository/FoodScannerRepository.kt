@@ -9,13 +9,16 @@ import com.example.nutrisnap.data.remote.NutritionDetails
 import com.example.nutrisnap.data.remote.PredictionResponse
 import com.example.nutrisnap.data.remote.RetrofitClient
 import com.example.nutrisnap.data.remote.UsdaFoodDto
+import com.example.nutrisnap.ml.FoodValidator
 import com.example.nutrisnap.ui.components.loadSoftwareBitmap
 
 class FoodScannerRepository(
     context: Context,
     private val usdaApiKey: String
 ) {
-    private val classifier = FoodClassifier(context.applicationContext)
+    private val appContext = context.applicationContext
+    private val classifier = FoodClassifier(appContext)
+    private val validator = FoodValidator(appContext)
 
     suspend fun analyzeFood(
         context: Context,
@@ -23,9 +26,21 @@ class FoodScannerRepository(
         bitmap: Bitmap?
     ): PredictionResponse {
         val softwareBitmap = loadSoftwareBitmap(context, imageUri, bitmap)
+
+        // Check whether the image contains food
+        val validation = validator.validate(softwareBitmap)
+
+        if (!validation.isFood) {
+            throw IllegalArgumentException(
+                "This image does not appear to contain food. Please upload a food image."
+            )
+        }
+
+        // Classify the food
         val topPredictions = classifier.classify(softwareBitmap, topK = 5)
         val best = topPredictions.first()
 
+        // Retrieve nutritional information
         val cleanQuery = best.food_name.replace("_", " ")
         val nutritionDetails = try {
             val usdaResponse = RetrofitClient.usdaApi.searchFood(
